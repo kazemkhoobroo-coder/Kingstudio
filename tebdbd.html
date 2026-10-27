@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>King Studio</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#07070b;--surface:#101018;--surface-2:#16161f;--border:#24242f;
+  --text:#f5f5fa;--muted:#8a8aa0;--gold:#c9a84c;--gold-glow:rgba(201,168,76,.25);
+  --top-h:72px;--bottom-h:96px;
+}
+
+/* ===== تنظیمات ضد لگ ===== */
+html,body{height:100vh;height:100dvh;overflow:hidden;touch-action:pan-y}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Tahoma,sans-serif;
+  line-height:1.7;-webkit-font-smoothing:antialiased;user-select:none}
+.hidden { display: none !important; }
+
+/* ===== انیمیشن‌ها (GPU Accelerated) ===== */
+@keyframes rotateBorder { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes pulseNeon { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.95); } }
+@keyframes loadBar { 0% { width: 0%; } 100% { width: 100%; } }
+
+/* ===== TOP PANEL ===== */
+.top-panel{position:fixed;top:0;left:0;right:0;height:var(--top-h);z-index:1000;
+  background:rgba(7,7,11,.8);backdrop-filter:blur(20px) saturate(180%);
+  -webkit-backdrop-filter:blur(20px) saturate(180%);
+  border-bottom:1px solid var(--border);display:flex;align-items:center;
+  justify-content:space-between;padding:0 32px;overflow:hidden;transform: translateZ(0);}
+.top-panel::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  background-size:50% 100%;animation:slide 3s linear infinite}
+@keyframes slide{0%{background-position:-100% 0}100%{background-position:200% 0}}
+
+.brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:1.15rem;
+  color:var(--text);text-decoration:none;background:none;border:0;cursor:pointer;font-family:inherit;padding:0}
+.brand-mark{width:38px;height:38px;border-radius:10px;position:relative;overflow:hidden;
+  background:linear-gradient(135deg,var(--gold),#8a6d2c);display:grid;place-items:center}
+.brand-mark::before{content:'';position:absolute;inset:0;
+  background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.4) 50%,transparent 70%);
+  background-size:200% 100%;animation:shimmer 2.5s infinite}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.brand-mark svg{width:20px;height:20px;color:#07070b;position:relative;z-index:1}
+.brand-name{background:linear-gradient(90deg,var(--text) 0%,var(--gold) 50%,var(--text) 100%);
+  background-size:200% 100%;-webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;animation:brandFlow 4s linear infinite}
+@keyframes brandFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+.header-actions{display:flex;align-items:center;gap:12px}
+.top-nav{display:flex;gap:6px;list-style:none}
+.top-nav button{display:inline-flex;align-items:center;gap:8px;color:var(--muted);
+  font-family:inherit;font-size:.85rem;font-weight:600;padding:8px 14px;
+  border-radius:8px;background:none;border:0;cursor:pointer;transition:color .2s,background .2s}
+.top-nav button:hover{color:var(--text);background:var(--surface)}
+.top-nav svg{width:16px;height:16px}
+
+.lang-toggle{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;
+  border-radius:8px;background:var(--surface);border:1px solid var(--border);
+  color:var(--text);font-family:inherit;font-size:.8rem;font-weight:800;
+  cursor:pointer;transition:border-color .2s,background .2s}
+.lang-toggle:hover{border-color:var(--gold);background:var(--surface-2)}
+.lang-toggle svg{width:16px;height:16px;transition:transform .6s}
+.lang-toggle:hover svg{transform:rotate(180deg)}
+
+/* ===== PANEL (PAGES) ===== */
+.panel{position:fixed;inset:0;z-index:1;
+  padding:calc(var(--top-h) + 20px) 32px calc(var(--bottom-h) + 24px);
+  display:none;align-items:center;justify-content:center;overflow:hidden}
+.panel.active{display:flex;animation:panelIn .38s cubic-bezier(.2,.8,.2,1)}
+@keyframes panelIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+.panel-inner{width:100%;max-width:1100px;max-height:100%;
+  display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;padding:4px;
+  -webkit-overflow-scrolling:touch;will-change:transform;}
+.panel-inner::-webkit-scrollbar{width:6px}
+.panel-inner::-webkit-scrollbar-thumb{background:var(--border);border-radius:6px}
+.panel-content{margin:auto;width:100%;display:flex;flex-direction:column}
+
+/* ===== HERO ===== */
+.hero .panel-content{align-items:center;text-align:center}
+.hero-neon-box{position:relative;width:130px;height:130px;border-radius:30px;overflow:hidden;
+  margin-bottom:24px;display:flex;align-items:center;justify-content:center;
+  background:var(--bg);padding:3px;box-shadow:0 0 35px rgba(201,168,76,0.2);z-index:1;}
+.hero-neon-box::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;
+  background:conic-gradient(from 0deg, transparent 20%, var(--gold) 50%, transparent 80%);
+  animation:rotateBorder 3s linear infinite;z-index:1;}
+.hero-neon-img{position:relative;z-index:3;width:100%;height:100%;object-fit:cover;
+  border-radius:27px;transition:transform 0.3s ease;}
+.hero-neon-box:hover .hero-neon-img{transform:scale(1.08);}
+
+.hero-badge{display:inline-flex;align-items:center;gap:10px;padding:8px 20px;
+  background:var(--surface);border:1px solid var(--border);border-radius:100px;
+  font-size:.85rem;color:var(--muted);margin-bottom:24px}
+.pulse-dot{width:8px;height:8px;border-radius:50%;background:var(--gold);animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 var(--gold-glow)}70%{box-shadow:0 0 0 12px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.hero h1{font-size:clamp(1.8rem,6vw,3.8rem);font-weight:900;line-height:1.15;
+  letter-spacing:-1.5px;margin-bottom:20px;background:linear-gradient(180deg,#fff 0%,#8a8aa0 120%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+
+.about-box{background:linear-gradient(135deg,var(--surface),var(--surface-2));
+  border:1px solid var(--border);border-radius:20px;padding:24px 28px;
+  margin:8px 0 26px;width:100%;max-width:640px;position:relative;overflow:hidden}
+.about-box::before{content:'';position:absolute;top:0;inset-inline-start:20%;inset-inline-end:20%;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.about-box h3{color:var(--gold);font-size:1.05rem;margin-bottom:10px;font-weight:800;display:flex;align-items:center;gap:8px}
+.about-box h3 svg{width:18px;height:18px}
+.about-box p{color:var(--muted);font-size:.92rem;line-height:1.9;text-align:start}
+
+.cta-group{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:10px;padding:13px 26px;
+  border-radius:12px;font-family:inherit;font-size:.92rem;font-weight:700;
+  border:1px solid transparent;cursor:pointer;outline:none;transition:transform .2s,opacity .2s,background .2s}
+.btn svg{width:18px;height:18px}
+.btn-primary{background:var(--gold);color:#07070b}
+.btn-primary:hover{transform:translateY(-2px);opacity:.92}
+.btn-primary:active{transform:translateY(0)}
+.btn-ghost{background:transparent;color:var(--text);border-color:var(--border);text-decoration:none}
+.btn-ghost:hover{background:var(--surface);transform:translateY(-2px)}
+.btn-ghost:active{transform:translateY(0)}
+html[dir="rtl"] .btn-primary svg.arrow{transform:scaleX(-1)}
+
+/* ==================================================== */
+/* ===== SLIDER (ULTRA FAST 1000FPS VERSION) ========== */
+/* ==================================================== */
+.ad-slider {
+  width: 100%;
+  max-width: 680px;
+  margin: 10px auto 26px;
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid var(--border);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.5), 0 0 20px rgba(201,168,76,0.08);
+  aspect-ratio: 16 / 9;
+  background: var(--surface);
+  direction: ltr; /* اسلایدر همیشه از چپ به راست رفتار میکند */
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: pan-y; /* جلوگیری از تداخل با اسکرول عمودی */
+  transform: translateZ(0); /* فعالسازی GPU */
+}
+
+.slider-track {
+  display: flex;
+  height: 100%;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.slide {
+  min-width: 100%;
+  height: 100%;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.slide::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 55%, rgba(7,7,11,0.75) 100%);
+  pointer-events: none;
+}
+
+.slider-dots {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  z-index: 3;
+  padding: 6px 12px;
+  background: rgba(7,7,11,0.55);
+  border-radius: 100px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.slider-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 0;
+  padding: 0;
+  background: rgba(255,255,255,0.35);
+  cursor: pointer;
+  transition: background 0.3s ease, width 0.3s ease, border-radius 0.3s ease, transform 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.slider-dot:hover {
+  background: rgba(255,255,255,0.6);
+  transform: scale(1.15);
+}
+
+.slider-dot.active {
+  background: var(--gold);
+  width: 22px;
+  border-radius: 100px;
+  box-shadow: 0 0 10px var(--gold);
+  transform: scale(1);
+}
+
+/* ===== TIMELINE ===== */
+.beats-list{display:flex;flex-direction:column;border-top:1px solid var(--border)}
+.beat{display:grid;grid-template-columns:110px 1fr;gap:24px;padding:22px 16px;
+  border-bottom:1px solid var(--border);border-radius:10px;transition:background .2s,transform .2s}
+.beat:hover{background:var(--surface);transform:translateX(-4px)}
+.beat-date{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums;padding-top:4px}
+.beat-tag{display:inline-flex;align-items:center;gap:6px;font-size:.7rem;font-weight:700;letter-spacing:.5px;color:var(--gold);margin-bottom:4px}
+.beat-tag svg{width:12px;height:12px}
+.beat-title{font-size:1.05rem;font-weight:700;margin-bottom:4px}
+.beat-desc{font-size:.88rem;color:var(--muted)}
+
+/* ===== ARCHIVE (PROJECTS) ===== */
+.archive-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));gap:16px;width: 100%;}
+.archive-card{background:linear-gradient(145deg, var(--surface), var(--surface-2));border:1px solid var(--border);
+  border-radius:16px;padding:20px;text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:12px;
+  position:relative;overflow:hidden;will-change: transform;transform: translateZ(0); 
+  transition: transform .25s cubic-bezier(0.2, 0.8, 0.2, 1), border-color .25s;}
+.archive-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0;transition:opacity .25s;}
+.archive-card:hover{transform: translateY(-4px) scale(1.01);border-color:var(--gold);box-shadow: 0 8px 20px rgba(0,0,0,0.4);}
+.archive-card:hover::before{opacity:1}
+.card-icon{width:44px;height:44px;border-radius:12px;background:var(--bg);border:1px solid var(--border);
+  display:grid;place-items:center;color:var(--gold);transition: color .2s, background .2s, transform .2s;}
+.archive-card:hover .card-icon{background: var(--gold-glow); transform: scale(1.05);}
+.card-icon svg{width:22px;height:22px}
+.archive-card h3{font-size:1.05rem;font-weight:800;color:var(--text)}
+.archive-card p{font-size:.85rem;color:var(--muted);flex:1; line-height:1.6}
+
+/* ===== TUTORIALS ===== */
+.tutorial-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));gap:16px;width: 100%;}
+.tut-card{background:linear-gradient(145deg, var(--surface), var(--surface-2));border:1px solid var(--border);
+  border-radius:16px;padding:24px;text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:12px;
+  position:relative;overflow:hidden;cursor:pointer;transition: transform .2s, border-color .2s;}
+.tut-card:hover{transform:translateY(-4px);border-color:var(--gold);box-shadow:0 10px 30px rgba(0,0,0,0.5);}
+.tut-card h3{font-size:1.2rem;font-weight:800;color:var(--text);display:flex;align-items:center;gap:10px}
+.tut-card p{font-size:.9rem;color:var(--muted)}
+
+.tut-content-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;width:100%;}
+.tut-content-box h2{color:var(--gold);font-size:1.5rem;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:10px;}
+.tut-content-box h3{color:var(--text);font-size:1.1rem;margin-top:20px;margin-bottom:10px;}
+.tut-content-box p{color:var(--muted);font-size:.95rem;line-height:1.9;margin-bottom:12px;}
+.tut-content-box pre{background:#000;padding:16px;border-radius:8px;border:1px solid var(--border);overflow-x:auto;direction:ltr;margin-bottom:16px;}
+.tut-content-box code{font-family:monospace;color:#4ade80;font-size:.9rem;line-height:1.5;}
+.tut-content-box ul{margin-right:20px;margin-bottom:16px;color:var(--muted);font-size:.95rem;}
+.tut-content-box li{margin-bottom:8px;}
+
+/* ===== OVERLAYS ===== */
+.overlay{position:absolute;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;
+  background:rgba(7,7,11,0.85);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  padding:20px;animation:fadeIn .3s ease;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.join-modal{background:var(--surface-2);border:1px solid var(--gold);border-radius:20px;padding:32px;
+  text-align:center;max-width:400px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,0.8);}
+.join-modal h2{font-size:1.2rem;margin-bottom:24px;color:var(--text);}
+.join-modal .btn{width:100%;margin-bottom:12px;justify-content:center;}
+
+.loading-screen{text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.loading-logo{font-size:2.5rem;font-weight:900;color:var(--gold);margin-bottom:20px;
+  text-shadow:0 0 20px var(--gold-glow);animation:pulseNeon 1.5s infinite;}
+.loading-bar{width:200px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+.loading-bar-inner{height:100%;background:var(--gold);animation:loadBar 1.5s linear forwards;}
+
+/* ===== PRICING ===== */
+.pricing-header{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:20px;padding:16px;border-radius:14px;
+  background:linear-gradient(90deg,transparent,rgba(201,168,76,.08),transparent)}
+.pricing-header svg{width:28px;height:28px;color:var(--gold);filter:drop-shadow(0 0 10px var(--gold-glow));animation:pulseIcon 2s ease-in-out infinite}
+@keyframes pulseIcon{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+.pricing-header h2{font-size:1.5rem;font-weight:800;
+  background:linear-gradient(90deg,var(--text),var(--gold),var(--text));
+  background-size:200% 100%;-webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;animation:brandFlow 4s linear infinite}
+.price-list{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.price-row{display:flex;justify-content:space-between;align-items:center;gap:14px;
+  padding:13px 20px;border-bottom:1px solid var(--border);transition:background .2s}
+.price-row:last-child{border-bottom:0}
+.price-row:hover{background:var(--surface-2)}
+.price-name{color:var(--text);font-size:.9rem;flex:1;min-width:0}
+.price-val{color:var(--gold);font-weight:700;font-size:.88rem;white-space:nowrap;font-variant-numeric:tabular-nums;transition:color .2s}
+.price-row:hover .price-val{color:#e8c568}
+
+/* ===== CONTACT ===== */
+.contact-box{background:linear-gradient(135deg,var(--surface) 0%,var(--surface-2) 100%);border:1px solid var(--border);border-radius:24px;padding:48px 32px;
+  text-align:center;display:flex;flex-direction:column;align-items:center;gap:20px;position:relative;overflow:hidden;width:100%}
+.contact-box::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;
+  background:conic-gradient(from 0deg,transparent,var(--gold-glow),transparent 30%);animation:rotate 6s linear infinite;opacity:.3}
+@keyframes rotate{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.contact-box>*{position:relative;z-index:1}
+.contact-box h3{font-size:1.8rem;font-weight:800}
+.contact-box p{color:var(--muted);max-width:440px;font-size:.92rem}
+.contact-info{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+.contact-link{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:12px;background:var(--bg);border:1px solid var(--gold);
+  color:var(--gold);font-weight:700;font-size:.95rem;text-decoration:none;transition:transform .2s,background .2s}
+.contact-link svg{width:18px;height:18px}
+.contact-link:hover{transform:scale(1.03);background:rgba(201,168,76,.1)}
+html[dir="rtl"] .contact-link:first-child{direction:ltr}
+
+/* ==================================================== */
+/* ===== BOTTOM PANEL (NEON GLASS PILL) =============== */
+/* ==================================================== */
+.bottom-panel{position:fixed;bottom:20px;left:50%;transform: translate3d(-50%, 0, 0);z-index:1000;
+  padding: 2px; border-radius: 100px; overflow: hidden; 
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 25px rgba(201,168,76,0.2);
+  will-change: transform;-webkit-backface-visibility: hidden;backface-visibility: hidden;}
+.bottom-panel::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;
+  background:conic-gradient(from 0deg, transparent 10%, var(--gold) 50%, transparent 90%);
+  animation:rotateBorder 4s linear infinite;z-index:0;}
+.bottom-panel-inner{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-around;
+  padding:8px 10px;gap:2px;min-width:340px;max-width:95vw;
+  background: rgba(20, 20, 30, 0.6); backdrop-filter: blur(30px) saturate(200%);-webkit-backdrop-filter: blur(30px) saturate(200%);
+  border-radius: 100px;border: 1px solid rgba(255, 255, 255, 0.08); }
+.dock-item{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;width:56px;padding:8px 0;border-radius:14px; color:var(--muted);background:transparent;border:0;
+  font-family:inherit;cursor:pointer;position:relative;transition:color .2s,background .2s, transform .2s; -webkit-tap-highlight-color:transparent;}
+.dock-item svg{width:20px;height:20px;transition:transform .2s}
+.dock-item span{font-size:.55rem;font-weight:600}
+.dock-item:hover{color:var(--text);background:rgba(255,255,255,.08)}
+.dock-item:hover svg{transform:translateY(-1px)}
+.dock-item.active{color:var(--gold);background: rgba(201,168,76,0.15);box-shadow: inset 0 0 10px rgba(201,168,76,0.1);border-radius: 14px;}
+.dock-item.active::after { display: none; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width:768px){
+  :root{--top-h:60px;--bottom-h:90px}
+  .top-panel{padding:0 14px}
+  .top-nav{display:none}
+  .panel{padding:calc(var(--top-h) + 12px) 14px calc(var(--bottom-h) + 16px)}
+  .archive-grid, .tutorial-grid{grid-template-columns:1fr;gap:12px}
+  .beat{grid-template-columns:1fr;gap:6px;padding:16px 12px}
+  .contact-box{padding:32px 20px}
+  
+  .bottom-panel-inner { padding:6px 5px; width:95vw; justify-content:space-between; }
+  .dock-item{width:16%;padding:6px 0;border-radius: 12px;}
+  .dock-item.active{border-radius: 12px;}
+  .dock-item span{font-size:.5rem}
+  
+  .about-box{padding:20px 20px}
+  .pricing-header h2{font-size:1.25rem}
+  .price-row{padding:12px 16px}
+  .price-name,.price-val{font-size:.82rem}
+  .brand-name{font-size:1rem}
+  .lang-toggle{padding:6px 10px;font-size:.72rem}
+  .ad-slider { max-width: 100%; }
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .bottom-panel-inner { background: rgba(20, 20, 30, 0.95); }
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+
+<!-- TOP PANEL -->
+<header class="top-panel">
+  <button class="brand" data-target="home">
+    <span class="brand-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v16M6 12l10-8M6 12l10 8"/></svg>
+    </span>
+    <span class="brand-name">King Studio</span>
+  </button>
+  <div class="header-actions">
+    <nav>
+      <ul class="top-nav">
+        <li><button data-target="timeline">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg>
+          <span data-fa="فعالیت‌ها" data-en="Activity"></span>
+        </button></li>
+        <li><button data-target="archive">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7v12a2 2 0 002 2h14a2 2 0 002-2V7M3 7l2-3h14l2 3M3 7h18"/></svg>
+          <span data-fa="پروژه‌ها" data-en="Projects"></span>
+        </button></li>
+        <li><button data-target="tutorials">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          <span data-fa="آموزش‌ها" data-en="Tutorials"></span>
+        </button></li>
+        <li><button data-target="contact">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+          <span data-fa="ارتباط" data-en="Contact"></span>
+        </button></li>
+      </ul>
+    </nav>
+    <button class="lang-toggle" id="langToggle" aria-label="Change language">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><path d="M2 12h20"/>
+        <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
+      </svg>
+      <span id="langLabel">EN</span>
+    </button>
+  </div>
+</header>
+
+<main>
+  <!-- HOME -->
+  <section class="panel hero active" id="home">
+    <div class="panel-inner">
+      <div class="panel-content">
+        <div class="hero-neon-box">
+          <img src="https://cdn.imgurl.ir/uploads/m4957_.jpg" alt="King Studio" class="hero-neon-img" loading="lazy">
+        </div>
+        <div class="hero-badge"><span class="pulse-dot"></span><span data-fa="فعال در روبیکا | ساخت بازی و برنامه" data-en="Active on Rubika | Game &amp; App Development"></span></div>
+        <h1 data-fa="ساخت بازی فقط به دست پادشاه" data-en="Game Development — Only by the King"></h1>
+
+        <!-- ===== AD SLIDER (HOME) ===== -->
+        <div class="ad-slider" data-autoplay="3500">
+          <div class="slider-track">
+            <div class="slide"><img src="https://cdn.imgurl.ir/uploads/z707388_.jpg" alt="Ad 1" loading="eager" decoding="async"></div>
+            <div class="slide"><img src="https://cdn.imgurl.ir/uploads/l063515_.jpg" alt="Ad 2" loading="lazy" decoding="async"></div>
+            <div class="slide"><img src="https://cdn.imgurl.ir/uploads/p20294_.jpg" alt="Ad 3" loading="lazy" decoding="async"></div>
+            <div class="slide"><img src="https://cdn.imgurl.ir/uploads/f18573_.jpg" alt="Ad 4" loading="lazy" decoding="async"></div>
+            <div class="slide"><img src="https://cdn.imgurl.ir/uploads/j186283_.jpg" alt="Ad 5" loading="lazy" decoding="async"></div>
+            <div class="slide"><img src="https://cdn.imgurl.ir/uploads/u410132_.jpg" alt="Ad 6" loading="lazy" decoding="async"></div>
+            <div class="slide"><img src="https://cdn.imgurl.ir/uploads/i596174_.jpg" alt="Ad 7" loading="lazy" decoding="async"></div>
+            <div class="slide"><img src="https://cdn.imgurl.ir/uploads/q818062_.jpg" alt="Ad 8" loading="lazy" decoding="async"></div>
+            <div class="slide"><img src="https://cdn.imgurl.ir/uploads/z707388_.jpg" alt="Ad 1 clone" loading="lazy" decoding="async"></div>
+          </div>
+          <div class="slider-dots"></div>
+        </div>
+        
+        <div class="about-box">
+          <h3>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span data-fa="درباره من" data-en="About Me"></span>
+          </h3>
+          <p data-fa="سلام! من امیرعلی هستم، کد نویس صفحات وب و ساخت برنامه با استفاده از HTML. تمام سفارشات رو با همین قیمت‌ها می‌پذیریم. بعد از گشت سایت، حتماً کانال کینگ استودیو در روبیکا و تلگرام رو فالو کنید." data-en="Hi! I'm AmirAli, a web developer and app builder using HTML. We accept all orders at these same prices. After exploring the site, be sure to follow the King Studio channel on Rubika and Telegram."></p>
+        </div>
+
+        <div class="cta-group">
+          <button class="btn btn-primary" data-target="archive">
+            <span data-fa="مشاهده پروژه‌ها" data-en="View Projects"></span>
+            <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+          <a href="https://rubika.ir/KINGSTUDIO" target="_blank" rel="noopener" class="btn btn-ghost">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+            <span data-fa="کانال روبیکا" data-en="Rubika Channel"></span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TIMELINE -->
+  <section class="panel" id="timeline">
+    <div class="panel-inner">
+      <div class="panel-content">
+        <div class="beats-list">
+          <div class="beat">
+            <span class="beat-date" data-fa="۱۴۰۵/۰۸/۰۴" data-en="2026/10/26"></span>
+            <div>
+              <span class="beat-tag"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="6"/></svg><span data-fa="انتشار" data-en="Published"></span></span>
+              <div class="beat-title" data-fa="آپدیت جدید آموزش یونیتی در کانال" data-en="New Unity Tutorial Update on Channel"></div>
+              <div class="beat-desc" data-fa="بخش جدیدی از آموزش‌های یونیتی برای مبتدیان منتشر شد." data-en="A new Unity tutorial section for beginners has been published."></div>
+            </div>
+          </div>
+          <div class="beat">
+            <span class="beat-date" data-fa="۱۴۰۵/۰۷/۲۸" data-en="2026/10/19"></span>
+            <div>
+              <span class="beat-tag"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="6"/></svg><span data-fa="پروژه" data-en="Project"></span></span>
+              <div class="beat-title" data-fa="تکمیل فریم‌ورک بازی موبایلی" data-en="Mobile Game Framework Completed"></div>
+              <div class="beat-desc" data-fa="فریم‌ورک سبک با اجرای روان روی دستگاه‌های ضعیف‌تر آماده شد." data-en="A lightweight framework with smooth performance on lower-end devices is ready."></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ARCHIVE (PROJECTS) -->
+  <section class="panel" id="archive">
+    <div class="panel-inner">
+      <div class="panel-content">
+
+        <!-- ===== AD SLIDER (PROJECTS) ===== -->
+        <div class="ad-slider" data-autoplay="3500">
+          <div class="slider-track">
+            <div class="slide"><img src="https://cdn.imgurl.ir/uploads/z707388_.jpg" alt="Ad 1" loading="eager" decoding="async"></div>
+            <div class="slide"><img src="https://cdn.imgurl.ir/uploads/l063515_.jpg" alt="Ad 2" loading="lazy" decoding="async"></div>
+            <div class="slide"><img src="https://cdn.imgurl.ir/uploads/p20294_.jpg" alt="Ad 3" loading="lazy" decoding="async"></div>
+            <div class="slide"><img src="https://cdn.imgurl.ir/uploads/f18573_.jpg" alt="Ad 4" loading="lazy" decoding="async"></div>
+            <div class="slide"><img src="https://cdn.imgurl.ir/uploads/j186283_.jpg" alt="Ad 5" loading="lazy" decoding="async"></div>
+            <div class="slide"><img src="https://cdn.imgurl.ir/uploads/u410132_.jpg" alt="Ad 6" loading="lazy" decoding="async"></div>
+            <div class="slide"><img src="https://cdn.imgurl.ir/uploads/i596174_.jpg" alt="Ad 7" loading="lazy" decoding="async"></div>
+            <div class="slide"><img src="https://cdn.imgurl.ir/uploads/q818062_.jpg" alt="Ad 8" loading="lazy" decoding="async"></div>
+            <div class="slide"><img src="https://cdn.imgurl.ir/uploads/z707388_.jpg" alt="Ad 1 clone" loading="lazy" decoding="async"></div>
+          </div>
+          <div class="slider-dots"></div>
+        </div>
+
+        <div class="archive-grid">
+          <a href="https://rubika.ir/KINGSTUDIO" target="_blank" rel="noopener" class="archive-card">
+            <span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="4"/><path d="M7 12h2M15 12h2M12 10v4"/></svg></span>
+            <h3 data-fa="گیم سنتر" data-en="Game Center"></h3><p data-fa="بازی های مختلف در برنامک های ایتا" data-en="Various games in Eitaa mini-apps"></p>
+          </a>
+          <a href="https://rubika.ir/KINGSTUDIO" target="_blank" rel="noopener" class="archive-card">
+            <span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-4h6v4M9 11h.01M15 11h.01M9 15h.01M15 15h.01"/></svg></span>
+            <h3 data-fa="مدرسه من" data-en="My School"></h3><p data-fa="برنامه برای آشنایی با مدرسه" data-en="App for getting familiar with the school"></p>
+          </a>
+          <a href="https://rubika.ir/KINGSTUDIO" target="_blank" rel="noopener" class="archive-card">
+            <span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg></span>
+            <h3 data-fa="همتا" data-en="Hamta"></h3><p data-fa="برنامه کمک درسی" data-en="Educational assistant app"></p>
+          </a>
+          <a href="https://rubika.ir/KINGSTUDIO" target="_blank" rel="noopener" class="archive-card">
+            <span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/></svg></span>
+            <h3 data-fa="مای استور" data-en="My Store"></h3><p data-fa="اپ استوری کاملا جدید و بروز" data-en="Brand new and updated app store"></p>
+          </a>
+          <a href="https://rubika.ir/KINGSTUDIO" target="_blank" rel="noopener" class="archive-card">
+            <span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg></span>
+            <h3 data-fa="ایموجی دان" data-en="Emoji Dun"></h3><p data-fa="بازی حدس کلمه در ایموجی" data-en="Emoji word guessing game"></p>
+          </a>
+          <a href="https://rubika.ir/KINGSTUDIO" target="_blank" rel="noopener" class="archive-card">
+            <span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span>
+            <h3 data-fa="کد باکس" data-en="CodeBox"></h3><p data-fa="محیطی برای ويرايش کد" data-en="Environment for code editing"></p>
+          </a>
+          <a href="https://rubika.ir/KINGSTUDIO" target="_blank" rel="noopener" class="archive-card">
+            <span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 00-3 3v2a3 3 0 003 3 3 3 0 003-3V5a3 3 0 00-3-3zM9 12a3 3 0 00-3 3v2a3 3 0 003 3 3 3 0 003-3v-2a3 3 0 00-3-3zM15 12a3 3 0 00-3 3v2a3 3 0 003 3 3 3 0 003-3v-2a3 3 0 00-3-3z"/></svg></span>
+            <h3 data-fa="آریا جی پی تی" data-en="Arya GPT"></h3><p data-fa="هوش مصنوعی" data-en="Artificial Intelligence"></p>
+          </a>
+          <a href="https://rubika.ir/KINGSTUDIO" target="_blank" rel="noopener" class="archive-card">
+            <span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/></svg></span>
+            <h3 data-fa="توییتر فرند" data-en="Twitter Friend"></h3><p data-fa="هک جعلی تویتر" data-en="Fake Twitter hack"></p>
+          </a>
+          <a href="https://rubika.ir/KINGSTUDIO" target="_blank" rel="noopener" class="archive-card">
+            <span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></span>
+            <h3 data-fa="پسورد ساز" data-en="Password Maker"></h3><p data-fa="ساخت پسورد هوشمند با نام دلخواه" data-en="Smart password generator with custom name"></p>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TUTORIALS -->
+  <section class="panel" id="tutorials">
+    <div class="panel-inner">
+      <div class="panel-content" id="tut-list-view">
+        <div class="tutorial-grid">
+          <div class="tut-card" onclick="startTutorial('html')">
+            <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:24px;color:var(--gold);"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> HTML</h3>
+            <p data-fa="زبان نشانه‌گذاری ابرمتن، پایه و اساس تمام صفحات وب." data-en="Hypertext Markup Language, the foundation of all web pages."></p>
+          </div>
+          <div class="tut-card" onclick="startTutorial('sketchup')">
+            <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:24px;color:var(--gold);"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> SketchUp</h3>
+            <p data-fa="نرم‌افزار طراحی سه‌بعدی برای معماران و مهندسان." data-en="3D modeling software for architects and engineers."></p>
+          </div>
+          <div class="tut-card" onclick="startTutorial('python')">
+            <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:24px;color:var(--gold);"><path d="M12 2a3 3 0 00-3 3v2a3 3 0 003 3 3 3 0 003-3V5a3 3 0 00-3-3zM9 12a3 3 0 00-3 3v2a3 3 0 003 3 3 3 0 003-3v-2a3 3 0 00-3-3zM15 12a3 3 0 00-3 3v2a3 3 0 003 3 3 3 0 003-3v-2a3 3 0 00-3-3z"/></svg> Python</h3>
+            <p data-fa="زبان برنامه‌نویسی قدرتمند و ساده برای هوش مصنوعی و وب." data-en="Powerful and simple programming language for AI and web."></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-content hidden" id="tut-content-view">
+        <button class="btn btn-ghost" onclick="closeTutorial()" style="margin-bottom:16px;align-self:flex-start;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          <span data-fa="بازگشت به لیست" data-en="Back to List"></span>
+        </button>
+        <div class="tut-content-box" id="tut-dynamic-content"></div>
+      </div>
+    </div>
+
+    <div class="overlay hidden" id="join-overlay">
+      <div class="join-modal">
+        <h2 data-fa="آیا شما عضو کانال کینگ استدیو هستید؟" data-en="Are you a member of King Studio channel?"></h2>
+        <a href="https://rubika.ir/KINGSTUDIO" target="_blank" rel="noopener" class="btn btn-primary">
+          <span data-fa="الان میشم" data-en="I'll join now"></span>
+        </a>
+        <button class="btn btn-ghost" onclick="startLoading()">
+          <span data-fa="عضو شدم و میخوام برم مطالب رو ببینم" data-en="I joined and want to see the content"></span>
+        </button>
+      </div>
+    </div>
+
+    <div class="overlay hidden" id="loading-overlay" style="background:#07070b;">
+      <div class="loading-screen">
+        <div class="loading-logo">KING STUDIO</div>
+        <div class="loading-bar"><div class="loading-bar-inner"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICES -->
+  <section class="panel" id="curiosity">
+    <div class="panel-inner">
+      <div class="panel-content">
+        <div class="pricing-header">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <h2 data-fa="قیمت‌ها - لیست مهم" data-en="Prices - Important List"></h2>
+        </div>
+        <div class="price-list">
+          <div class="price-row"><span class="price-name" data-fa="اجرای کد" data-en="Code Execution"></span><span class="price-val" data-fa="۳۰ هزار تومان" data-en="30,000 Toman"></span></div>
+          <div class="price-row"><span class="price-name" data-fa="ساخت اپ زیر ۵ مگ" data-en="App (under 5MB)"></span><span class="price-val" data-fa="۱۵۰ هزار تومان" data-en="150,000 Toman"></span></div>
+          <div class="price-row"><span class="price-name" data-fa="ساخت بات یا تبلیغات" data-en="Bot or Advertising"></span><span class="price-val" data-fa="۵۰ هزار تومان" data-en="50,000 Toman"></span></div>
+          <div class="price-row"><span class="price-name" data-fa="ساخت تصاویر پروفایل" data-en="Profile Images"></span><span class="price-val" data-fa="۵۰ هزار تومان" data-en="50,000 Toman"></span></div>
+          <div class="price-row"><span class="price-name" data-fa="ساخت ویدیو" data-en="Video Production"></span><span class="price-val" data-fa="۱۰۰ هزار تومان" data-en="100,000 Toman"></span></div>
+          <div class="price-row"><span class="price-name" data-fa="تولید متن تبلیغاتی" data-en="Promotional Text"></span><span class="price-val" data-fa="۵۰ هزار تومان" data-en="50,000 Toman"></span></div>
+          <div class="price-row"><span class="price-name" data-fa="تولید بنر" data-en="Banner Design"></span><span class="price-val" data-fa="۵۰ هزار تومان" data-en="50,000 Toman"></span></div>
+          <div class="price-row"><span class="price-name" data-fa="ساخت برنامه ۱ تا ۵۰ مگ" data-en="App (1MB to 50MB)"></span><span class="price-val" data-fa="۵۰۰ هزار تومان" data-en="500,000 Toman"></span></div>
+          <div class="price-row"><span class="price-name" data-fa="نوشتن کد HTML" data-en="HTML Coding"></span><span class="price-val" data-fa="۳۰۰ هزار تومان" data-en="300,000 Toman"></span></div>
+          <div class="price-row"><span class="price-name" data-fa="خرید سرور" data-en="Server Purchase"></span><span class="price-val" data-fa="۲۰۰ هزار تومان" data-en="200,000 Toman"></span></div>
+          <div class="price-row"><span class="price-name" data-fa="خرید کانال ۱۲۰ نفره" data-en="120-Member Channel"></span><span class="price-val" data-fa="۲۰۰ هزار تومان" data-en="200,000 Toman"></span></div>
+          <div class="price-row"><span class="price-name" data-fa="ساخت برچسب تا ۱۲ تایی" data-en="Sticker Pack (12)"></span><span class="price-val" data-fa="۱۰۰ هزار تومان" data-en="100,000 Toman"></span></div>
+          <div class="price-row"><span class="price-name" data-fa="ساخت برچسب ۲۰ تایی" data-en="Sticker Pack (20)"></span><span class="price-val" data-fa="۲۰۰ هزار تومان" data-en="200,000 Toman"></span></div>
+          <div class="price-row"><span class="price-name" data-fa="ساخت تصاویر خانوادگی" data-en="Family Images"></span><span class="price-val" data-fa="۳۰۰ هزار تومان" data-en="300,000 Toman"></span></div>
+          <div class="price-row"><span class="price-name" data-fa="فتوشاپ" data-en="Photoshop"></span><span class="price-val" data-fa="۴۰۰ هزار تومان" data-en="400,000 Toman"></span></div>
+          <div class="price-row"><span class="price-name" data-fa="روتوش" data-en="Retouching"></span><span class="price-val" data-fa="۲۰۰ هزار تومان" data-en="200,000 Toman"></span></div>
+          <div class="price-row"><span class="price-name" data-fa="ساخت عکس حرم" data-en="Shrine Image"></span><span class="price-val" data-fa="۱۵۰ هزار تومان" data-en="150,000 Toman"></span></div>
+          <div class="price-row"><span class="price-name" data-fa="ریمیکس موسیقی ۳ دقیقه‌ای" data-en="3-Minute Music Remix"></span><span class="price-val" data-fa="۵۰۰ هزار تومان" data-en="500,000 Toman"></span></div>
+          <div class="price-row"><span class="price-name" data-fa="آموزش اسکچور" data-en="SketchUp Tutorial"></span><span class="price-val" data-fa="۱۶۰ هزار تومان" data-en="160,000 Toman"></span></div>
+          <div class="price-row"><span class="price-name" data-fa="آموزش تبدیل کد به فایل" data-en="Code-to-File Tutorial"></span><span class="price-val" data-fa="۱۰ هزار تومان" data-en="10,000 Toman"></span></div>
+          <div class="price-row"><span class="price-name" data-fa="آموزش کد HTML" data-en="HTML Coding Tutorial"></span><span class="price-val" data-fa="۱ میلیون تومان" data-en="1,000,000 Toman"></span></div>
+          <div class="price-row"><span class="price-name" data-fa="آموزش اینشات" data-en="InShot Tutorial"></span><span class="price-val" data-fa="۴۰ هزار تومان" data-en="40,000 Toman"></span></div>
+          <div class="price-row"><span class="price-name" data-fa="کد پایتون در هر رده" data-en="Python Code (any level)"></span><span class="price-val" data-fa="۶۰۰ هزار تومان" data-en="600,000 Toman"></span></div>
+          <div class="price-row"><span class="price-name" data-fa="ساخت سایت" data-en="Website Design"></span><span class="price-val" data-fa="۴۰۰ هزار تومان" data-en="400,000 Toman"></span></div>
+          <div class="price-row"><span class="price-name" data-fa="سئوی سایت" data-en="Website SEO"></span><span class="price-val" data-fa="۲۰۰ هزار تومان" data-en="200,000 Toman"></span></div>
+          <div class="price-row"><span class="price-name" data-fa="ساخت تصاویر کارت ویزیت" data-en="Business Card Images"></span><span class="price-val" data-fa="۴۰۰ هزار تومان" data-en="400,000 Toman"></span></div>
+          <div class="price-row"><span class="price-name" data-fa="ساخت منظره برای پس‌زمینه" data-en="Background Landscape"></span><span class="price-val" data-fa="۲۰۰ هزار تومان" data-en="200,000 Toman"></span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="panel" id="contact">
+    <div class="panel-inner">
+      <div class="panel-content">
+        <div class="contact-box">
+          <h3 data-fa="راه ارتباطی" data-en="Contact"></h3>
+          <p data-fa="برای سفارش، همکاری یا هرگونه سوال، از طریق آیدی زیر در روبیکا پیام دهید." data-en="For orders, collaboration, or any questions, message us via the ID below on Rubika."></p>
+          <div class="contact-info">
+            <a href="https://rubika.ir/IRAN_7588" target="_blank" rel="noopener" class="contact-link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              @IRAN_7588
+            </a>
+            <a href="https://rubika.ir/KINGSTUDIO" target="_blank" rel="noopener" class="contact-link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+              <span data-fa="ورود به کانال" data-en="Enter Channel"></span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- BOTTOM PANEL -->
+<nav class="bottom-panel">
+  <div class="bottom-panel-inner">
+    <button class="dock-item active" data-target="home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg>
+      <span data-fa="خانه" data-en="Home"></span>
+    </button>
+    <button class="dock-item" data-target="timeline">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg>
+      <span data-fa="فعالیت" data-en="Activity"></span>
+    </button>
+    <button class="dock-item" data-target="archive">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7v12a2 2 0 002 2h14a2 2 0 002-2V7M3 7l2-3h14l2 3M3 7h18"/></svg>
+      <span data-fa="پروژه‌ها" data-en="Projects"></span>
+    </button>
+    <button class="dock-item" data-target="tutorials">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      <span data-fa="آموزش‌ها" data-en="Tutorials"></span>
+    </button>
+    <button class="dock-item" data-target="curiosity">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+      <span data-fa="کنجکاوی" data-en="Prices"></span>
+    </button>
+    <button class="dock-item" data-target="contact">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+      <span data-fa="ارتباط" data-en="Contact"></span>
+    </button>
+  </div>
+</nav>
+
+<script>
+// ===== Language System =====
+let currentLang = 'fa';
+function setLang(lang){
+  currentLang = lang;
+  document.documentElement.lang = lang;
+  document.documentElement.dir = (lang === 'fa') ? 'rtl' : 'ltr';
+  document.querySelectorAll('[data-fa]').forEach(el => {
+    const txt = el.dataset[lang];
+    if (txt !== undefined) el.textContent = txt;
+  });
+  document.getElementById('langLabel').textContent = (lang === 'fa') ? 'EN' : 'فا';
+  try { localStorage.setItem('kingLang', lang); } catch(e){}
+}
+document.getElementById('langToggle').addEventListener('click', () => {
+  setLang(currentLang === 'fa' ? 'en' : 'fa');
+});
+
+// ===== Navigation =====
+const panels = document.querySelectorAll('.panel');
+const dockItems = document.querySelectorAll('.dock-item');
+function navigate(id){
+  const target = document.getElementById(id);
+  if (!target) return;
+  panels.forEach(p => p.classList.toggle('active', p.id === id));
+  dockItems.forEach(d => d.classList.toggle('active', d.dataset.target === id));
+  const inner = target.querySelector('.panel-inner');
+  if (inner) inner.scrollTop = 0;
+  history.replaceState(null, '', '#' + id);
+}
+document.querySelectorAll('[data-target]').forEach(el => {
+  el.addEventListener('click', e => {
+    e.preventDefault();
+    navigate(el.dataset.target);
+  });
+});
+
+// ===== Tutorial System =====
+const tutData = {
+  html: `<h2>آموزش جامع HTML (از 0 تا 100)</h2><p>HTML (زبان نشانه‌گذاری ابرمتن) اسکلت اصلی هر وب‌سایت است. در این آموزش قدم به قدم با آن آشنا می‌شویم.</p><h3>1. ساختار پایه</h3><p>هر صفحه وب از تگ‌های مشخصی تشکیل شده که مرورگر را راهنمایی می‌کنند.</p><pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+  &lt;title&gt;صفحه من&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1&gt;سلام دنیا!&lt;/h1&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre><h3>2. تگ‌های متنی و لینک‌ها</h3><p>تگ‌های &lt;h1&gt; تا &lt;h6&gt; برای تیترها، &lt;p&gt; برای پاراگراف و &lt;a&gt; برای لینک استفاده می‌شوند.</p><pre><code>&lt;p&gt;این یک متن ساده است.&lt;/p&gt;
+&lt;a href="https://google.com"&gt;ورود به گوگل&lt;/a&gt;</code></pre><h3>3. تصاویر و لیست‌ها</h3><p>برای درج تصویر از &lt;img&gt; و برای ساخت لیست از &lt;ul&gt; و &lt;ol&gt; استفاده می‌کنیم.</p><pre><code>&lt;img src="image.jpg" alt="توضیح عکس"&gt;
+&lt;ul&gt;
+  &lt;li&gt;آیتم اول&lt;/li&gt;
+  &lt;li&gt;آیتم دوم&lt;/li&gt;
+&lt;/ul&gt;</code></pre><h3>4. فرم‌ها</h3><p>برای دریافت داده از کاربر (مثل ثبت‌نام) از تگ فرم استفاده می‌شود.</p><pre><code>&lt;form&gt;
+  &lt;input type="text" placeholder="نام شما"&gt;
+  &lt;button type="submit"&gt;ارسال&lt;/button&gt;
+&lt;/form&gt;</code></pre><h3>5. تگ‌های معنایی (Semantic)</h3><p>استفاده از تگ‌هایی مثل <code>&lt;header&gt;</code>، <code>&lt;nav&gt;</code>، <code>&lt;main&gt;</code> و <code>&lt;footer&gt;</code> به مرورگر و موتورهای جستجو (سئو) کمک می‌کند ساختار سایت را بهتر بفهمند.</p><p>همیشه سعی کنید به جای استفاده از کدهای درهم، از ساختار معنایی درست استفاده کنید تا سایت شما حرفه‌ای‌تر دیده شود.</p>`,
+  sketchup: `<h2>آموزش جامع SketchUp (از 0 تا 100)</h2><p>اسکچ‌آپ یک نرم‌افزار قدرتمند و کاربرپسند برای مدل‌سازی سه‌بعدی است که بیشتر در معماری، مهندسی عمران و طراحی داخلی کاربرد دارد.</p><h3>1. آشنایی با محیط و ابزارها</h3><p>در نوار ابزار بالای صفحه، ابزارهای اصلی مانند خط (Line)، مستطیل (Rectangle) و دایره (Circle) قرار دارند. با این ابزارها می‌توانید پلان ساختمان خود را روی صفحه ترسیم کنید.</p><p><strong>نکته کلیدی:</strong> همیشه از کلیدهای جهت‌نما (آبی، سبز، قرمز) برای ترسیم دقیق‌تر استفاده کنید تا خطا نکنید.</p><h3>2. تبدیل پلان دو بعدی به 3 بعدی</h3><p>مهم‌ترین ابزار اسکچ‌آپ، ابزار <strong>Push/Pull (فشار و کشش)</strong> است. وقتی یک شکل دو بعدی می‌کشید، با این ابزار می‌توانید آن را به ارتفاع دلخواه برسانید و دیوار بسازید.</p><pre><code>مراحل:
+1. ابزار Rectangle (R) را انتخاب کنید.
+2. یک مستطیل بکشید.
+3. ابزار Push/Pull (P) را انتخاب کنید.
+4. روی مستطیل کلیک کنید، موس را بالا ببرید و ارتفاع بدهید.</code></pre><h3>3. گروه‌بندی و کامپوننت‌ها</h3><p>برای اینکه مدل‌هایتان به هم نچسبند، حتماً بعد از ساخت هر آبجکت، آن را انتخاب کرده و کلیک راست کنید و <strong>Make Group</strong> را بزنید. اگر از یک آبجکت چند بار استفاده می‌کنید، از <strong>Make Component</strong> استفاده کنید.</p><h3>4. متریال‌ها و بافت</h3><p>از منوی سمت راست (Default Tray)، بخش Materials را باز کنید تا به متریال‌هایی مثل شیشه، چوب، آجر و... دسترسی پیدا کنید. با ابزار Paint Bucket (B) آن‌ها را روی سطوح اعمال کنید.</p><h3>5. نورپردازی، سایه و رندر</h3><p>از بخش Shadows می‌توانید زمان و مکان خورشید را تنظیم کنید تا سایه‌های واقع‌گرایانه ایجاد شود. برای خروجی نهایی حرفه‌ای، معمولاً از پلاگین‌هایی مثل V-Ray یا Enscape استفاده می‌شود.</p>`,
+  python: `<h2>آموزش جامع Python (از 0 تا 100)</h2><p>پایتون یک زبان برنامه‌نویسی همه‌منظوره، سطح بالا و بسیار خوانا است. این زبان به دلیل سادگی، محبوب‌ترین زبان برای شروع برنامه‌نویسی، هوش مصنوعی و تحلیل داده‌هاست.</p><h3>1. متغیرها و انواع داده</h3><p>در پایتون نیازی به تعریف نوع متغیر نیست. فقط یک نام انتخاب کرده و مقدار می‌دهید.</p><pre><code>name = "AmirAli" # رشته (String)
+age = 20        # عدد صحیح (Integer)
+height = 1.75   # اعشاری (Float)
+is_student = True # بولی (Boolean)</code></pre><h3>2. دستورات شرطی (If/Else)</h3><p>برای تصمیم‌گیری در کد استفاده می‌شود. پایتون از فاصله (Indentation) برای مشخص کردن بلوک کد استفاده می‌کند.</p><pre><code>if age >= 18:
+    print("شما بزرگسال هستید")
+else:
+    print("شما زیر سن قانونی هستید")</code></pre><h3>3. حلقه‌ها (Loops)</h3><p>حلقه for برای تکرار روی یک مجموعه، و حلقه while تا زمانی که شرط برقرار است تکرار می‌شود.</p><pre><code>for i in range(5):
+    print("شماره:", i)
+
+count = 0
+while count < 3:
+    print("سلام")
+    count += 1</code></pre><h3>4. توابع (Functions)</h3><p>برای جلوگیری از تکرار کد، آن را داخل تابع قرار می‌دهیم.</p><pre><code>def greet(name):
+    return f"سلام {name} عزیز!"
+
+print(greet("King"))</code></pre><h3>5. لیست‌ها و دیکشنری‌ها</h3><p>لیست‌ها برای نگهداری چندین مقدار، و دیکشنری‌ها برای نگهداری داده‌های کلید-مقدار استفاده می‌شوند.</p><pre><code>fruits = ["سیب", "موز", "انار"]
+user = {"name": "Ali", "age": 20}
+
+print(fruits[0]) # سیب
+print(user["name"]) # Ali</code></pre><p>پایتون کتابخانه‌های فوق‌العاده‌ای دارد. برای وب (Django/Flask)، برای هوش مصنوعی (TensorFlow/PyTorch) و برای داده‌ها (Pandas) استفاده می‌شود.</p>`
+};
+let activeTut = null;
+
+function startTutorial(topic) {
+  activeTut = topic;
+  document.getElementById('join-overlay').classList.remove('hidden');
+}
+
+function startLoading() {
+  document.getElementById('join-overlay').classList.add('hidden');
+  const loadOverlay = document.getElementById('loading-overlay');
+  loadOverlay.classList.remove('hidden');
+  
+  const bar = loadOverlay.querySelector('.loading-bar-inner');
+  bar.style.animation = 'none';
+  bar.offsetHeight; /* Force Reflow */
+  bar.style.animation = 'loadBar 1.5s linear forwards';
+
+  setTimeout(() => {
+    loadOverlay.classList.add('hidden');
+    document.getElementById('tut-list-view').classList.add('hidden');
+    document.getElementById('tut-content-view').classList.remove('hidden');
+    document.getElementById('tut-dynamic-content').innerHTML = tutData[activeTut];
+    document.querySelector('#tutorials .panel-inner').scrollTop = 0;
+  }, 1500);
+}
+
+function closeTutorial() {
+  document.getElementById('tut-content-view').classList.add('hidden');
+  document.getElementById('tut-list-view').classList.remove('hidden');
+  document.querySelector('#tutorials .panel-inner').scrollTop = 0;
+}
+
+// =====================================================
+// ===== SLIDER SYSTEM (1000FPS ULTRA SMOOTH) ==========
+// =====================================================
+class AdSlider {
+  constructor(container) {
+    this.container = container;
+    this.track = container.querySelector('.slider-track');
+    this.dotsContainer = container.querySelector('.slider-dots');
+    this.realCount = this.track.children.length - 1; // Last child is clone
+    this.index = 0;
+    this.locked = false;
+    this.autoplayMs = parseInt(container.dataset.autoplay) || 3500;
+    
+    this.initDots();
+    this.bindEvents();
+    this.track.style.transition = 'transform 0.65s cubic-bezier(0.4, 0, 0.2, 1)';
+    this.timer = setInterval(() => this.next(), this.autoplayMs);
+  }
+  
+  initDots() {
+    for (let i = 0; i < this.realCount; i++) {
+      const dot = document.createElement('button');
+      dot.className = 'slider-dot' + (i === 0 ? ' active' : '');
+      dot.dataset.index = i;
+      dot.setAttribute('aria-label', `Slide ${i + 1}`);
+      this.dotsContainer.appendChild(dot);
+    }
+    this.dots = this.dotsContainer.children;
+  }
+  
+  updateDots() {
+    const realIdx = this.index >= this.realCount ? 0 : this.index;
+    for (let i = 0; i < this.dots.length; i++) {
+      this.dots[i].classList.toggle('active', i === realIdx);
+    }
+  }
+  
+  goTo(idx, animate = true) {
+    this.track.style.transition = animate 
+      ? 'transform 0.65s cubic-bezier(0.4, 0, 0.2, 1)' 
+      : 'none';
+    this.track.style.transform = `translate3d(-${idx * 100}%, 0, 0)`;
+    this.index = idx;
+  }
+  
+  handleTransitionEnd = (e) => {
+    if (e.propertyName !== 'transform') return;
+    
+    if (this.index >= this.realCount) {
+      // Seamlessly jump back to start (clone → real first slide)
+      this.goTo(0, false);
+      void this.track.offsetHeight; /* Force reflow */
+      requestAnimationFrame(() => {
+        this.track.style.transition = 'transform 0.65s cubic-bezier(0.4, 0, 0.2, 1)';
+      });
+    }
+    this.updateDots();
+    this.locked = false;
+  }
+  
+  next() {
+    if (this.locked) return;
+    if (!this.container.offsetParent) return; // Skip if hidden page
+    this.locked = true;
+    this.goTo(this.index + 1);
+  }
+  
+  prev() {
+    if (this.locked) return;
+    if (!this.container.offsetParent) return;
+    this.locked = true;
+    if (this.index === 0) {
+      // Jump to clone position instantly, then animate backwards
+      this.goTo(this.realCount, false);
+      void this.track.offsetHeight;
+      requestAnimationFrame(() => {
+        this.goTo(this.realCount - 1, true);
+      });
+    } else {
+      this.goTo(this.index - 1);
+    }
+  }
+  
+  bindEvents() {
+    this.track.addEventListener('transitionend', this.handleTransitionEnd);
+    
+    // Dots click
+    this.dotsContainer.addEventListener('click', (e) => {
+      const dot = e.target.closest('.slider-dot');
+      if (!dot || this.locked) return;
+      const target = parseInt(dot.dataset.index);
+      if (target === this.index) return;
+      this.locked = true;
+      this.goTo(target);
+    });
+    
+    // Pause on hover (desktop)
+    this.container.addEventListener('mouseenter', () => {
+      clearInterval(this.timer);
+    });
+    this.container.addEventListener('mouseleave', () => {
+      this.timer = setInterval(() => this.next(), this.autoplayMs);
+    });
+    
+    // Touch swipe (mobile)
+    let startX = 0, startY = 0, swiping = false;
+    this.container.addEventListener('touchstart', (e) => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      swiping = false;
+    }, {passive: true});
+    
+    this.container.addEventListener('touchmove', (e) => {
+      const dx = e.touches[0].clientX - startX;
+      const dy = e.touches[0].clientY - startY;
+      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
+        swiping = true;
+      }
+    }, {passive: true});
+    
+    this.container.addEventListener('touchend', (e) => {
+      if (!swiping) return;
+      const dx = e.changedTouches[0].clientX - startX;
+      if (dx < -40) this.next();
+      else if (dx > 40) this.prev();
+      swiping = false;
+    }, {passive: true});
+  }
+}
+
+// Initialize all sliders on the page
+document.querySelectorAll('.ad-slider').forEach(el => new AdSlider(el));
+
+// ===== Init =====
+(function init(){
+  const saved = (function(){
+    try { return localStorage.getItem('kingLang') || 'fa'; } catch(e){ return 'fa'; }
+  })();
+  setLang(saved);
+  if (location.hash){
+    const id = location.hash.slice(1);
+    if (document.getElementById(id)) navigate(id);
+  }
+})();
+</script>
+</body>
+</html>
